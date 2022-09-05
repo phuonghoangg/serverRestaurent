@@ -9,4 +9,9 @@ router.post('/login', userController.loginUser);
 router.get('/', middlewareController.verifyToken, userController.getAllUser);
 router.delete('/:id', middlewareController.verifyTokenAndAdmin, userController.deleteUser);
 
+//refresh login  handle
+router.post('/refresh', userController.requestRefreshToken);
+
+//logout
+router.post('/logout', middlewareController.verifyToken, userController.logoutUser);
 module.exports = router;
