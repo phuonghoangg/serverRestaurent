@@ -17,6 +17,10 @@ const billSchema = new mongoose.Schema(
             default: '',
             require: true,
         },
+        priceBill: {
+            type: Number,
+            default: '',
+        },
         description: {
             type: String,
             default: '',
@@ -66,6 +70,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+
     products: [
         {
             type: mongoose.Schema.Types.ObjectId,
