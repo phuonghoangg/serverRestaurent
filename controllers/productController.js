@@ -18,11 +18,21 @@ const productController = {
     },
     getAllProduct: async (req, res) => {
         try {
-            const allProduct = await Product.find().populate('user', 'username');
-            return res.status(200).json(allProduct);
+            console.log(req.query.type);
+            const type = req.query.type;
+            if (!type) {
+                const allProduct = await Product.find().populate('user', 'username');
+                return res.status(200).json(allProduct);
+            } else {
+                const allProduct = await Product.find({ type: type }).populate('user', 'username');
+                return res.status(200).json(allProduct);
+            }
         } catch (error) {
             return res.status(500).json(error);
         }
+    },
+    getByType: async (req, res) => {
+        console.log(req.query);
     },
     updateProduct: async (req, res) => {
         try {

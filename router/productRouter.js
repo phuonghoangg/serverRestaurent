@@ -6,6 +6,9 @@ const router = require('express').Router();
 router.post('/', productController.addProduct);
 router.post('/:id', productController.updateProduct);
 router.get('/', productController.getAllProduct);
+
+// router.get('/?type', productController.getByType);
+
 router.delete('/:id', productController.deleteProduct);
 router.post('/f/:id', productController.findProduct);
 module.exports = router;
