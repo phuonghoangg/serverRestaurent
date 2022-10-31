@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const userRouter = require('./router/userRouter');
 const productRouter = require('./router/productRouter');
 const billRouter = require('./router/billRouter');
+require('./processors/index')
 dotenv.config();
 const app = express();
 

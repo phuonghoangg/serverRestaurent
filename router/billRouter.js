@@ -8,5 +8,7 @@ router.delete('/:id',middlewareController.verifyTokenAdminAndCashier, billContro
 router.get('/',middlewareController.verifyToken, billController.getAllBill);
 router.post('/accept-bill',middlewareController.verifyTokenAndCashier,billController.acceptBill)
 router.post('/fail-bill',middlewareController.verifyTokenAndCashier,billController.failBill)
+router.post('/accept-dishout',middlewareController.verifyTokenAndCashier,billController.accecptDishOut)
 router.get('/total-price',billController.allTotalBill)
+
 module.exports = router;

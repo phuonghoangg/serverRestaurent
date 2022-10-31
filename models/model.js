@@ -38,6 +38,10 @@ const billSchema = new mongoose.Schema(
             type:Boolean,
             default:false
         },
+        numberTable:{
+            type:String,
+            default:''
+        },
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
@@ -132,6 +136,10 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true,
         default: '',
+    },
+    isDelete:{
+        type:String,
+        default:false
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,

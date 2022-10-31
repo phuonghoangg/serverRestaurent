@@ -1,8 +1,25 @@
 const { Bill, User,Product } = require('../models/model');
+const Queue = require('bull');
+const { REDIS_PORT, REDIS_URI } = require('../config/RedisCredentials');
+
+const billQueue = new Queue('billQueue',{
+    redis:{
+        port: REDIS_PORT,
+        host: REDIS_URI,
+    },
+})
 
 const billController = {
+
     addBill: async (req, res) => {
         try {
+            const dataBill = req.body
+            //Queue
+            // await new Promise(res=>billQueue.add({dataBill},)
+            //             .then(job=>job.finished().then(result=>{
+            //                 res(result)
+            //                 job.remove()
+            //             })))
             const newBill = await new Bill(req.body);
             const bill = await newBill.save();
             if (req.body.user) {

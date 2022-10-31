@@ -18,7 +18,6 @@ const productController = {
     },
     getAllProduct: async (req, res) => {
         try {
-            console.log(req.query.type);
             const type = req.query.type;
             if (!type) {
                 const allProduct = await Product.find().populate('user', 'username');
