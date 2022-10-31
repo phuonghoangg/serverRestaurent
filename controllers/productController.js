@@ -64,6 +64,18 @@ const productController = {
             return res.status(500).json(error);
         }
     },
+    totalProduct: async(req,res)=>{
+        try {
+            let count = 0
+            const allProducts = await Product.find()
+            allProducts.map(product=>{
+                count = count + 1;
+            })
+            return res.status(200).json(count)
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
 };
 
 module.exports = productController;

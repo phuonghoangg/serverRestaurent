@@ -29,9 +29,10 @@ const userController = {
             {
                 id: user.id,
                 isAdmin: user.isAdmin,
+                role:user.role,
             },
             process.env.ACCESS_TOKEN,
-            { expiresIn: '20s' },
+            { expiresIn: '7d' },
         );
     },
     generateRefreshToken: (user) => {
@@ -39,6 +40,7 @@ const userController = {
             {
                 id: user.id,
                 isAdmin: user.isAdmin,
+                role:user.role
             },
             process.env.REFRESH_TOKEN,
             { expiresIn: '30d' },
@@ -121,6 +123,18 @@ const userController = {
         refreshTokens = refreshTokens.filter((token) => token !== req.cookies.refreshToken);
         res.status(200).json('logout success');
     },
+    totalUser: async(req,res)=>{
+        try {
+            let count = 0
+            const allUser = await User.find()
+            allUser.map(product=>{
+                count = count + 1;
+            })
+            return res.status(200).json(count)
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    }
 };
 
 module.exports = userController;

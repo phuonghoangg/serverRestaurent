@@ -16,7 +16,7 @@ const middlewareController = {
                 next();
             });
         } else {
-            return res.status(401).json("u're not authenticated ");
+            return res.status(401).json("u're not authenticated token ");
         }
     },
     verifyTokenAndAdmin: (req, res, next) => {
@@ -24,7 +24,34 @@ const middlewareController = {
             if (req.user.id === req.params.id || req.user.isAdmin) {
                 next();
             } else {
-                res.status(403).json('khong xoa dc ');
+                res.status(403).json("u a're not  admin");
+            }
+        });
+    },
+    verifyTokenAndCashier: (req, res, next) => {
+        middlewareController.verifyToken(req, res, () => {
+            if (req.user.id === req.params.id || req.user.role === "cashier") {
+                next();
+            } else {
+                res.status(403).json("u a're not cashier");
+            }
+        });
+    },
+    verifyTokenAndChef: (req, res, next) => {
+        middlewareController.verifyToken(req, res, () => {
+            if (req.user.id === req.params.id || req.user.role === "chef") {
+                next();
+            } else {
+                res.status(403).json("u a're not chef");
+            }
+        });
+    },
+    verifyTokenAdminAndCashier: (req, res, next) => {
+        middlewareController.verifyToken(req, res, () => {
+            if (req.user.id === req.params.id || req.user.isAdmin || req.user.role ==='cashier') {
+                next();
+            } else {
+                res.status(403).json("u a're not  admin or cashier");
             }
         });
     },

@@ -26,6 +26,18 @@ const billSchema = new mongoose.Schema(
             default: '',
             require: true,
         },
+        isDishOut: {
+            type:Boolean,
+            default:false,
+        },
+        isActiveBill:{
+            type:Boolean,
+            default:false,
+        },
+        isFailBill:{
+            type:Boolean,
+            default:false
+        },
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
@@ -65,6 +77,10 @@ const userSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false,
+    },
+    role:{
+        type:String,
+        default:'customer' //customer/cashier/chef
     },
     imageURL: {
         type: String,

@@ -10,6 +10,8 @@ router.get('/', middlewareController.verifyToken, userController.getAllUser);
 
 router.delete('/:id', middlewareController.verifyTokenAndAdmin, userController.deleteUser);
 
+router.get('/count-user',userController.totalUser)
+
 //refresh login  handle
 router.post('/refresh', userController.requestRefreshToken);
 
