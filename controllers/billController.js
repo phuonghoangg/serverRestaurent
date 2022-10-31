@@ -108,6 +108,10 @@ const billController = {
         } catch (error) {
             return res.status(500).json(error);
         }
+    },
+    getAllBillAccept: async (req,res)=>{
+        const bills = await Bill.find({isActiveBill:true})
+        return res.status(200).json(bills)
     }
 };
 

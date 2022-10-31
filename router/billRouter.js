@@ -1,6 +1,5 @@
 const billController = require('../controllers/billController');
 const middlewareController = require('../controllers/middlewareController');
-
 const router = require('express').Router();
 
 router.post('/', billController.addBill);
@@ -11,4 +10,5 @@ router.post('/fail-bill',middlewareController.verifyTokenAndCashier,billControll
 router.post('/accept-dishout',middlewareController.verifyTokenAndCashier,billController.accecptDishOut)
 router.get('/total-price',billController.allTotalBill)
 
+router.get('/get-all-billaccept',billController.getAllBillAccept)
 module.exports = router;
