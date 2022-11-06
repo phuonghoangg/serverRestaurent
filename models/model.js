@@ -27,22 +27,26 @@ const billSchema = new mongoose.Schema(
             require: true,
         },
         isDishOut: {
-            type:Boolean,
-            default:false,
+            type: Boolean,
+            default: false,
         },
-        isActiveBill:{
-            type:Boolean,
-            default:false,
+        isActiveBill: {
+            type: Boolean,
+            default: false,
         },
-        isFailBill:{
-            type:Boolean,
-            default:false
+        isFailBill: {
+            type: Boolean,
+            default: false,
         },
-        numberTable:{
-            type:String,
-            default:''
+        numberTable: {
+            type: String,
+            default: '',
         },
         user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
+        userActive: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
@@ -82,9 +86,9 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    role:{
-        type:String,
-        default:'customer' //customer/cashier/chef
+    role: {
+        type: String,
+        default: 'customer', //customer/cashier/chef
     },
     imageURL: {
         type: String,
@@ -137,9 +141,13 @@ const productSchema = new mongoose.Schema({
         required: true,
         default: '',
     },
-    isDelete:{
-        type:String,
-        default:false
+    ingredient: {
+        type: String,
+        default: '',
+    },
+    isDelete: {
+        type: String,
+        default: false,
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
