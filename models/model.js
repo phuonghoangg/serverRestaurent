@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const billSchema = new mongoose.Schema(
     {
-        nameKH: {
+        nameHD: {
             type: String,
             default: '',
             require: true,
@@ -19,7 +19,7 @@ const billSchema = new mongoose.Schema(
         },
         priceBill: {
             type: Number,
-            default: '',
+            default: 0,
         },
         description: {
             type: String,
