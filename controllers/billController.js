@@ -58,13 +58,28 @@ const billController = {
             return res.status(500).json(error);
         }
     },
-    acceptBill: async (req, res) => {
+    acceptBillStaff: async (req, res) => {
         try {
-            console.log(req.body);
             const billData = await Bill.findById(req.body.id);
-            await billData.updateOne({ $set: { isActiveBill: true, userActive: req.body.user } });
-
+           if(!billData.chefActive && billData.isActiveBill ==false){
+            await billData.updateOne({ $set: { isActiveBill: true, userActive: req.body.user,status:'DON_DA_XAC_NHAN' } });
             return res.status(200).json('don hang da duoc nhan');
+           }else{
+            return res.status(400).json("don hang da dc nhan");
+           }
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
+    acceptBillChef: async (req,res) =>{
+        try {
+            const billData = await Bill.findById(req.body.id);
+            if(billData.chefActive=""){
+                await billData.updateOne({$set:{ chefActive:req.body.user,status:"BEP_XAC_NHAN"}})
+                return res.status(200).json('bep da xac nhan don hang')
+            }else{
+                return res.status(400).json('don hang da duoc bep xac nhan')
+            }
         } catch (error) {
             return res.status(500).json(error);
         }
@@ -72,8 +87,12 @@ const billController = {
     accecptDishOut: async (req, res) => {
         try {
             const billData = await Bill.findById(req.body.id);
-            await billData.updateOne({ $set: { isDishOut: true } });
-            return res.status(200).json('da nhan mon tu bep');
+            if(billData.chefActive){
+                await billData.updateOne({ $set: {isDishOut:true,status:"NHAN_VIEN_NHAN_MON" } });
+                return res.status(200).json('da nhan mon tu bep');
+            }else{
+                return res.status(400).json('bep chua ra mon')
+            }
         } catch (error) {
             return res.status(500).json(error);
         }

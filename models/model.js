@@ -50,6 +50,14 @@ const billSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
+        chefActive: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
+        status: {
+            type:String,
+            default: 'DON_MOI' //DON_DA_XAC_NHAN || BEP_XAC_NHAN || NHAN_VIEN_NHAN_MON
+        },
         products: [
             {
                 type: mongoose.Schema.Types.ObjectId,
