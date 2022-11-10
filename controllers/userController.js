@@ -6,15 +6,18 @@ let refreshTokens = [];
 const userController = {
     //register
     registerUser: async (req, res) => {
+        console.log(req.body);
         try {
             // console.log(req.body);
+            const { username, email, password, ...prev } = req.body;
             const salt = await bcrypt.genSalt(10);
-            const hashed = await bcrypt.hash(req.body.password, salt);
+            const hashed = await bcrypt.hash(password, salt);
             //create new user
             const newUser = await new User({
-                username: req.body.username,
-                email: req.body.email,
+                username: username,
+                email: email,
                 password: hashed,
+                ...prev,
             });
 
             const user = await newUser.save();
@@ -29,7 +32,7 @@ const userController = {
             {
                 id: user.id,
                 isAdmin: user.isAdmin,
-                role:user.role,
+                role: user.role,
             },
             process.env.ACCESS_TOKEN,
             { expiresIn: '7d' },
@@ -40,7 +43,7 @@ const userController = {
             {
                 id: user.id,
                 isAdmin: user.isAdmin,
-                role:user.role
+                role: user.role,
             },
             process.env.REFRESH_TOKEN,
             { expiresIn: '30d' },
@@ -123,18 +126,18 @@ const userController = {
         refreshTokens = refreshTokens.filter((token) => token !== req.cookies.refreshToken);
         res.status(200).json('logout success');
     },
-    totalUser: async(req,res)=>{
+    totalUser: async (req, res) => {
         try {
-            let count = 0
-            const allUser = await User.find()
-            allUser.map(product=>{
+            let count = 0;
+            const allUser = await User.find();
+            allUser.map((product) => {
                 count = count + 1;
-            })
-            return res.status(200).json(count)
+            });
+            return res.status(200).json(count);
         } catch (error) {
             return res.status(500).json(error);
         }
-    }
+    },
 };
 
 module.exports = userController;
