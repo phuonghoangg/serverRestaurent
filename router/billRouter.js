@@ -7,7 +7,7 @@ router.delete('/:id', middlewareController.verifyTokenAdminAndCashier, billContr
 router.get('/', middlewareController.verifyToken, billController.getAllBill);
 router.post('/accept-bill', middlewareController.verifyTokenAdminAndCashier, billController.acceptBillStaff);
 
-router.post('/accept-chef',middlewareController.verifyToken, billController.acceptBillChef)
+router.post('/accept-chef',middlewareController.verifyTokenAndChef, billController.acceptBillChef)
 
 router.post('/accept-dishout', middlewareController.verifyTokenAdminAndCashier, billController.accecptDishOut);
 router.post('/fail-bill', middlewareController.verifyTokenAndCashier, billController.failBill);
