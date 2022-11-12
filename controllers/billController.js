@@ -37,7 +37,18 @@ const billController = {
     },
     getAllBill: async (req, res) => {
         try {
-            const allBill = await Bill.find().populate('products');
+            const allBill = await Bill.find().populate('products').populate('user', 'username').sort({ updatedAt: -1 });
+            return res.status(200).json(allBill);
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
+    getBillWithUser: async (req, res) => {
+        try {
+            const allBill = await User.findById(req.params.id)
+                .select(['bills', 'username', 'createdAt'])
+                .populate('bills');
+
             return res.status(200).json(allBill);
         } catch (error) {
             return res.status(500).json(error);
@@ -89,7 +100,7 @@ const billController = {
     accecptDishOut: async (req, res) => {
         try {
             const billData = await Bill.findById(req.body.id);
-            if (billData.chefActive) {
+            if (billData.chefActive && billData.isDishOut == false) {
                 await billData.updateOne({ $set: { isDishOut: true, status: 'NHAN_VIEN_NHAN_MON' } });
                 return res.status(200).json('da nhan mon tu bep');
             } else {
