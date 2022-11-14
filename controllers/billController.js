@@ -36,8 +36,14 @@ const billController = {
         }
     },
     getAllBill: async (req, res) => {
+        let role = req.params.id
+        let allBill
         try {
-            const allBill = await Bill.find().populate('products').populate('user', 'username').sort({ updatedAt: -1 });
+           if(role === "chef"){
+             allBill = await Bill.find({status:"DON_DA_XAC_NHAN"}).populate('products','name').populate('user', ['username','role']).sort({ updatedAt: -1 });
+           }else{
+             allBill = await Bill.find().populate('products','name').populate('user', ['username','role']).sort({ updatedAt: -1 });
+           }
             return res.status(200).json(allBill);
         } catch (error) {
             return res.status(500).json(error);
@@ -46,8 +52,7 @@ const billController = {
     getBillWithUser: async (req, res) => {
         try {
             const allBill = await User.findById(req.params.id)
-                .select(['bills', 'username', 'createdAt'])
-                .populate('bills');
+                .populate('bills','products');
 
             return res.status(200).json(allBill);
         } catch (error) {
@@ -127,12 +132,27 @@ const billController = {
             return res.status(500).json(error);
         }
     },
+    rejectBill: async(req,res)=>{
+        try {
+            const billData = await Bill.findById(req.body.id);
+            if(billData.isActiveBill == false){
+                await billData.updateOne({$set: {isRejectBill:true,userActive:req.body.user,status:'HUY_DON'}})
+                return res.status(200).json('success')
+            }else{
+                return res.status(400).json('khong reject duoc bill')
+            }
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
     allTotalBill: async (req, res) => {
         try {
             let total = 0;
             const bills = await Bill.find();
             bills.map((bill) => {
-                total = total + bill.priceBill;
+                if(bill.isRejectBill==false){
+                    total = total + bill.priceBill;
+                }
             });
             return res.status(200).json(total);
         } catch (error) {
