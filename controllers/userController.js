@@ -94,6 +94,14 @@ const userController = {
             return res.status(500).json(error);
         }
     },
+    updateUser: async (req, res) => {
+        try {
+            await User.findByIdAndUpdate(req.params.id, req.body);
+            res.status(200).json('success updated');
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
     requestRefreshToken: async (req, res) => {
         const refreshToken = req.cookies.refreshToken;
         if (!refreshToken) {
