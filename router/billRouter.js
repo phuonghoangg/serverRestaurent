@@ -3,6 +3,7 @@ const middlewareController = require('../controllers/middlewareController');
 const router = require('express').Router();
 
 router.get('/total-price', billController.allTotalBill);
+router.post('/f/date', billController.findDate);
 router.post('/', billController.addBill);
 router.delete('/:id', middlewareController.verifyTokenAdminAndCashier, billController.deleteBill);
 router.get('/:id', middlewareController.verifyToken, billController.getAllBill);

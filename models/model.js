@@ -38,9 +38,9 @@ const billSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        isRejectBill:{
+        isRejectBill: {
             type: Boolean,
-            default:false,
+            default: false,
         },
         numberTable: {
             type: String,
@@ -59,8 +59,8 @@ const billSchema = new mongoose.Schema(
             ref: 'User',
         },
         status: {
-            type:String,
-            default: 'DON_MOI' //DON_DA_XAC_NHAN || BEP_XAC_NHAN || NHAN_VIEN_NHAN_MON || HUY_DON
+            type: String,
+            default: 'DON_MOI', //DON_DA_XAC_NHAN || BEP_XAC_NHAN || NHAN_VIEN_NHAN_MON || HUY_DON
         },
         products: [
             {
@@ -145,7 +145,6 @@ const productSchema = new mongoose.Schema({
     },
     imgUrlZoom: {
         type: String,
-        required: true,
         default: '',
     },
     type: {

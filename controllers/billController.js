@@ -36,14 +36,20 @@ const billController = {
         }
     },
     getAllBill: async (req, res) => {
-        let role = req.params.id
-        let allBill
+        let role = req.params.id;
+        let allBill;
         try {
-           if(role === "chef"){
-             allBill = await Bill.find({status:"DON_DA_XAC_NHAN"}).populate('products','name').populate('user', ['username','role']).sort({ updatedAt: -1 });
-           }else{
-             allBill = await Bill.find().populate('products','name').populate('user', ['username','role']).sort({ updatedAt: -1 });
-           }
+            if (role === 'chef') {
+                allBill = await Bill.find({ status: 'DON_DA_XAC_NHAN' })
+                    .populate('products', 'name')
+                    .populate('user', ['username', 'role'])
+                    .sort({ updatedAt: -1 });
+            } else {
+                allBill = await Bill.find()
+                    .populate('products', 'name')
+                    .populate('user', ['username', 'role'])
+                    .sort({ updatedAt: -1 });
+            }
             return res.status(200).json(allBill);
         } catch (error) {
             return res.status(500).json(error);
@@ -51,8 +57,7 @@ const billController = {
     },
     getBillWithUser: async (req, res) => {
         try {
-            const allBill = await User.findById(req.params.id)
-                .populate('bills','products');
+            const allBill = await User.findById(req.params.id).populate('bills', 'products');
 
             return res.status(200).json(allBill);
         } catch (error) {
@@ -132,14 +137,16 @@ const billController = {
             return res.status(500).json(error);
         }
     },
-    rejectBill: async(req,res)=>{
+    rejectBill: async (req, res) => {
         try {
             const billData = await Bill.findById(req.body.id);
-            if(billData.isActiveBill == false){
-                await billData.updateOne({$set: {isRejectBill:true,userActive:req.body.user,status:'HUY_DON'}})
-                return res.status(200).json('success')
-            }else{
-                return res.status(400).json('khong reject duoc bill')
+            if (billData.isActiveBill == false) {
+                await billData.updateOne({
+                    $set: { isRejectBill: true, userActive: req.body.user, status: 'HUY_DON' },
+                });
+                return res.status(200).json('success');
+            } else {
+                return res.status(400).json('khong reject duoc bill');
             }
         } catch (error) {
             return res.status(500).json(error);
@@ -150,7 +157,7 @@ const billController = {
             let total = 0;
             const bills = await Bill.find();
             bills.map((bill) => {
-                if(bill.isRejectBill==false){
+                if (bill.isRejectBill == false) {
                     total = total + bill.priceBill;
                 }
             });
@@ -161,6 +168,22 @@ const billController = {
     },
     getAllBillAccept: async (req, res) => {
         const bills = await Bill.find({ isActiveBill: true });
+        return res.status(200).json(bills);
+    },
+    findDate: async (req, res) => {
+        let timeLeft = new Date(req.body.timeLeft);
+        let timeRight = new Date(req.body.timeRight);
+
+        console.log(timeLeft.getTime());
+        const bills = await Bill.find();
+        bills.map((item) => {
+            console.log(item.createdAt.getTime());
+            if (timeLeft.getTime() < item.createdAt.getTime() < timeRight.getTime()) {
+                console.log('true');
+            } else {
+                console.log('false');
+            }
+        });
         return res.status(200).json(bills);
     },
 };

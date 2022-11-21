@@ -34,9 +34,9 @@ const productController = {
         console.log(req.query);
     },
     updateProduct: async (req, res) => {
+        console.log(req.body);
         try {
-            const product = await Product.findById(req.params.id);
-            await product.updateOne({ $set: req.body });
+            await Product.findByIdAndUpdate(req.params.id, req.body);
             return res.status(200).json('Updated Success');
         } catch (error) {
             return res.status(500).json(error);
@@ -63,14 +63,14 @@ const productController = {
             return res.status(500).json(error);
         }
     },
-    totalProduct: async(req,res)=>{
+    totalProduct: async (req, res) => {
         try {
-            let count = 0
-            const allProducts = await Product.find()
-            allProducts.map(product=>{
+            let count = 0;
+            const allProducts = await Product.find();
+            allProducts.map((product) => {
                 count = count + 1;
-            })
-            return res.status(200).json(count)
+            });
+            return res.status(200).json(count);
         } catch (error) {
             return res.status(500).json(error);
         }
