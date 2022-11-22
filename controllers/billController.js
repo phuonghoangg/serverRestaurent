@@ -1,6 +1,7 @@
 const { Bill, User, Product } = require('../models/model');
 const Queue = require('bull');
 const { REDIS_PORT, REDIS_URI } = require('../config/RedisCredentials');
+const e = require('express');
 
 const billQueue = new Queue('billQueue', {
     redis: {
@@ -52,7 +53,11 @@ const billController = {
                     .populate('user', ['username', 'role'])
                     .sort({ createdAt: 1 });
                 allBill.map((item) => {
-                    if (item.status !== 'NHAN_VIEN_NHAN_MON' && item.status !== 'HUY_DON') {
+                    if (
+                        item.status !== 'NHAN_VIEN_NHAN_MON' &&
+                        item.status !== 'HUY_DON' &&
+                        item.status !== 'FAIL_BILL'
+                    ) {
                         billWait.push(item);
                     }
                 });
@@ -62,19 +67,53 @@ const billController = {
             return res.status(500).json(error);
         }
     },
+    //get bill on day
     getBillSuccess: async (req, res) => {
+        const arr = [];
         try {
-            allBill = await Bill.find({ status: 'NHAN_VIEN_NHAN_MON' })
+            let time = new Date();
+            allBill = await Bill.find()
                 .populate('products', 'name')
                 .populate('user', 'username')
                 .sort({ createdAt: -1 });
-            console.log(allBill.length);
-            return res.status(200).json(allBill);
+            allBill.map((item) => {
+                if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status === 'FAIL_BILL') {
+                    if (time.getFullYear() === item.createdAt.getFullYear()) {
+                        if (time.getMonth() === item.createdAt.getMonth()) {
+                            if (time.getDate() === item.createdAt.getDate()) {
+                                arr.push(item);
+                            }
+                        }
+                    } else {
+                        console.log('faul');
+                    }
+                }
+            });
+            return res.status(200).json(arr);
         } catch (error) {
             return res.status(500).json(error);
         }
     },
+    findDate: async (req, res) => {
+        // let timeLeft = new Date(req.body.timeLeft);
+        // let timeRight = new Date(req.body.timeRight);
+        let time = new Date();
 
+        console.log(time.getDate());
+        const bills = await Bill.find().select(['createdAt']);
+        bills.map((item) => {
+            if (time.getFullYear() === item.createdAt.getFullYear()) {
+                if (time.getMonth() === item.createdAt.getMonth()) {
+                    if (time.getDate() === item.createdAt.getDate()) {
+                        console.log('true');
+                    }
+                }
+            } else {
+                console.log('faul');
+            }
+        });
+        return res.status(200).json(bills);
+    },
     getBillWithUser: async (req, res) => {
         try {
             const allBill = await User.findById(req.params.id).populate('bills', 'products');
@@ -86,15 +125,14 @@ const billController = {
     },
     getBillWithUserActive: async (req, res) => {
         try {
-            let priceAll = 0
-            const allBill = await Bill.find({userActive:req.params.id}).populate('products')
-            let arr = allBill.length
-            allBill.map(item=>{
-                if(item.status ==='NHAN_VIEN_NHAN_MON')
-                priceAll = priceAll+ item.priceBill
-            })
+            let priceAll = 0;
+            const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
+            let arr = allBill.length;
+            allBill.map((item) => {
+                if (item.status === 'NHAN_VIEN_NHAN_MON') priceAll = priceAll + item.priceBill;
+            });
             console.log(priceAll);
-            return res.status(200).json({allBill,total: arr, price:priceAll});
+            return res.status(200).json({ allBill, total: arr, price: priceAll });
         } catch (error) {
             return res.status(500).json(error);
         }
@@ -162,11 +200,13 @@ const billController = {
             const billData = await Bill.findById(req.body.id);
             if (billData.isFailBill == false) {
                 newPrice = billData.priceBill + billData.priceBill * 0.5;
-                await billData.updateOne({ $set: { isFailBill: true, priceBill: newPrice } });
+                await billData.updateOne({ $set: { isFailBill: true, priceBill: newPrice, status: 'FAIL_BILL' } });
                 return res.status(200).json('Bill den');
             } else {
                 newPrice = (billData.priceBill * 2) / 3;
-                await billData.updateOne({ $set: { isFailBill: false, priceBill: newPrice } });
+                await billData.updateOne({
+                    $set: { isFailBill: false, priceBill: newPrice, status: 'NHAN_VIEN_NHAN_MON' },
+                });
                 return res.status(200).json('khong den bill');
             }
         } catch (error) {
@@ -206,36 +246,16 @@ const billController = {
         const bills = await Bill.find({ isActiveBill: true });
         return res.status(200).json(bills);
     },
-    findDate: async (req, res) => {
-        let timeLeft = new Date(req.body.timeLeft);
-        let timeRight = new Date(req.body.timeRight);
 
-        console.log(timeLeft.getDate());
-        const dateLeft = timeLeft.getDate()
-        const bills = await Bill.find().select(['createdAt']);
-        bills.map((item) => {
-            console.log(item.createdAt.getDate());
-
-            if(timeLeft.getDate()>item.createdAt.getDate()){
-                console.log("true");
-            }else{
-                console.log("false");
-            }
-            // if (timeLeft.getTime() < item.createdAt.getTime() < timeRight.getTime()) {
-            //     console.log('true');
-            // } else {
-            //     console.log('false');
-            // }
-        });
-        return res.status(200).json(bills);
-    },
     getAllBillPage: async (req, res) => {
-        const bills = await Bill.find().populate('user','username').populate('userActive','username').populate('chefActive','username').sort({ updatedAt: -1 });
+        const bills = await Bill.find()
+            .populate('user', 'username')
+            .populate('userActive', 'username')
+            .populate('chefActive', 'username')
+            .sort({ updatedAt: -1 });
         return res.status(200).json(bills);
     },
-    getAllBillWithUser:async (req,res)=>{
-
-    }
+    getAllBillWithUser: async (req, res) => {},
 };
 
 module.exports = billController;
