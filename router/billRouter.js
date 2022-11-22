@@ -4,10 +4,14 @@ const router = require('express').Router();
 
 router.get('/total-price', billController.allTotalBill);
 router.post('/f/date', billController.findDate);
-router.post('/', billController.addBill);
+// router.post('/', billController.addBill);
 router.delete('/:id', middlewareController.verifyTokenAdminAndCashier, billController.deleteBill);
 router.get('/:id', middlewareController.verifyToken, billController.getAllBill);
+router.get('/',middlewareController.verifyTokenAndAdmin,billController.getAllBillPage)
 router.get('/u/:id', middlewareController.verifyToken, billController.getBillWithUser);
+router.get('/a/:id', middlewareController.verifyToken, billController.getBillWithUserActive);
+
+
 router.post('/accept-bill', middlewareController.verifyTokenAdminAndCashier, billController.acceptBillStaff);
 
 router.post('/accept-chef', middlewareController.verifyTokenAndChef, billController.acceptBillChef);

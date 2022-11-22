@@ -64,6 +64,22 @@ const billController = {
             return res.status(500).json(error);
         }
     },
+    getBillWithUserActive: async (req, res) => {
+        try {
+            let priceAll = 0
+            const allBill = await Bill.find({userActive:req.params.id}).populate('products')
+            let arr = allBill.length
+            allBill.map(item=>{
+                if(item.status ==='NHAN_VIEN_NHAN_MON')
+                priceAll = priceAll+ item.priceBill
+            })
+            console.log(priceAll);
+            return res.status(200).json({allBill,total: arr, price:priceAll});
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
+
     deleteBill: async (req, res) => {
         try {
             let billId = req.params.id;
@@ -174,18 +190,32 @@ const billController = {
         let timeLeft = new Date(req.body.timeLeft);
         let timeRight = new Date(req.body.timeRight);
 
-        console.log(timeLeft.getTime());
-        const bills = await Bill.find();
+        console.log(timeLeft.getDate());
+        const dateLeft = timeLeft.getDate()
+        const bills = await Bill.find().select(['createdAt']);
         bills.map((item) => {
-            console.log(item.createdAt.getTime());
-            if (timeLeft.getTime() < item.createdAt.getTime() < timeRight.getTime()) {
-                console.log('true');
-            } else {
-                console.log('false');
+            console.log(item.createdAt.getDate());
+
+            if(timeLeft.getDate()>item.createdAt.getDate()){
+                console.log("true");
+            }else{
+                console.log("false");
             }
+            // if (timeLeft.getTime() < item.createdAt.getTime() < timeRight.getTime()) {
+            //     console.log('true');
+            // } else {
+            //     console.log('false');
+            // }
         });
         return res.status(200).json(bills);
     },
+    getAllBillPage: async (req, res) => {
+        const bills = await Bill.find().populate('user','username').populate('userActive','username').populate('chefActive','username').sort({ updatedAt: -1 });
+        return res.status(200).json(bills);
+    },
+    getAllBillWithUser:async (req,res)=>{
+
+    }
 };
 
 module.exports = billController;
