@@ -38,23 +38,43 @@ const billController = {
     getAllBill: async (req, res) => {
         let role = req.params.id;
         let allBill;
+        let billWait = [];
         try {
             if (role === 'chef') {
                 allBill = await Bill.find({ status: 'DON_DA_XAC_NHAN' })
                     .populate('products', 'name')
                     .populate('user', ['username', 'role'])
-                    .sort({ updatedAt: -1 });
+                    .sort({ createdAt: 1 });
+                return res.status(200).json(allBill);
             } else {
                 allBill = await Bill.find()
                     .populate('products', 'name')
                     .populate('user', ['username', 'role'])
-                    .sort({ updatedAt: -1 });
+                    .sort({ createdAt: 1 });
+                allBill.map((item) => {
+                    if (item.status !== 'NHAN_VIEN_NHAN_MON' && item.status !== 'HUY_DON') {
+                        billWait.push(item);
+                    }
+                });
+                return res.status(200).json(billWait);
             }
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
+    getBillSuccess: async (req, res) => {
+        try {
+            allBill = await Bill.find({ status: 'NHAN_VIEN_NHAN_MON' })
+                .populate('products', 'name')
+                .populate('user', 'username')
+                .sort({ createdAt: -1 });
+            console.log(allBill.length);
             return res.status(200).json(allBill);
         } catch (error) {
             return res.status(500).json(error);
         }
     },
+
     getBillWithUser: async (req, res) => {
         try {
             const allBill = await User.findById(req.params.id).populate('bills', 'products');

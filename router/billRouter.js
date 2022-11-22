@@ -6,11 +6,18 @@ router.get('/total-price', billController.allTotalBill);
 router.post('/f/date', billController.findDate);
 // router.post('/', billController.addBill);
 router.delete('/:id', middlewareController.verifyTokenAdminAndCashier, billController.deleteBill);
+
+//get bill with role
 router.get('/:id', middlewareController.verifyToken, billController.getAllBill);
-router.get('/',middlewareController.verifyTokenAndAdmin,billController.getAllBillPage)
+
+router.get('/', middlewareController.verifyTokenAndAdmin, billController.getAllBillPage);
 router.get('/u/:id', middlewareController.verifyToken, billController.getBillWithUser);
 router.get('/a/:id', middlewareController.verifyToken, billController.getBillWithUserActive);
 
+//get bill use cms
+router.get('/u/:id', middlewareController.verifyToken, billController.getBillWithUser);
+//get bill successs
+router.get('/s', middlewareController.verifyToken, billController.getBillSuccess);
 
 router.post('/accept-bill', middlewareController.verifyTokenAdminAndCashier, billController.acceptBillStaff);
 
