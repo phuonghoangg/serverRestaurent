@@ -70,26 +70,32 @@ const billController = {
     //get bill on day
     getBillSuccess: async (req, res) => {
         const arr = [];
+        let total = 0;
         try {
             let time = new Date();
             allBill = await Bill.find()
                 .populate('products', 'name')
                 .populate('user', 'username')
                 .sort({ createdAt: -1 });
+
             allBill.map((item) => {
                 if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status === 'FAIL_BILL') {
-                    if (time.getFullYear() === item.createdAt.getFullYear()) {
-                        if (time.getMonth() === item.createdAt.getMonth()) {
-                            if (time.getDate() === item.createdAt.getDate()) {
-                                arr.push(item);
+                    if (req.body.type === 'day') {
+                        if (time.getFullYear() === item.createdAt.getFullYear()) {
+                            if (time.getMonth() === item.createdAt.getMonth()) {
+                                if (time.getDate() === item.createdAt.getDate()) {
+                                    arr.push(item);
+                                    total = total + item.priceBill;
+                                }
                             }
                         }
                     } else {
-                        console.log('faul');
+                        arr.push(item);
+                        total = total + item.priceBill;
                     }
                 }
             });
-            return res.status(200).json(arr);
+            return res.status(200).json({ bills: arr, total: total });
         } catch (error) {
             return res.status(500).json(error);
         }
@@ -124,34 +130,46 @@ const billController = {
         }
     },
     getBillWithUserActive: async (req, res) => {
-        const dateTemp = new Date(req.body.date)
-        console.log(dateTemp);
+        const dateTemp = new Date(req.body.date);
+
+        console.log(req.body.type);
         try {
             let priceAll = 0;
-            let bills = []
-            let total = 0
+            let bills = [];
+            let total = 0;
             const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
             let arr = allBill.length;
             allBill.map((item) => {
-                if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status ==='FAIL_BILL') {
-                   if(req.body.date){
-                    if(dateTemp.getFullYear() === item.createdAt.getFullYear()){
-                        if(dateTemp.getMonth() === item.createdAt.getMonth()){
-                         if(dateTemp.getDate() === item.createdAt.getDate()){
-                             priceAll = priceAll + item.priceBill;
-                             bills.push(item)
-                             total  = total + 1
-                         }
+                if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status === 'FAIL_BILL') {
+                    if (req.body.date && item.isRejectBill == false) {
+                        if (req.body.type === 'day') {
+                            if (
+                                dateTemp.getFullYear() === item.createdAt.getFullYear() &&
+                                dateTemp.getMonth() === item.createdAt.getMonth() &&
+                                dateTemp.getDate() === item.createdAt.getDate()
+                            ) {
+                                priceAll = priceAll + item.priceBill;
+                                bills.push(item);
+                                total = total + 1;
+                            }
+                        } else if (req.body.type === 'month') {
+                            if (
+                                dateTemp.getFullYear() === item.createdAt.getFullYear() &&
+                                dateTemp.getMonth() === item.createdAt.getMonth()
+                            ) {
+                                priceAll = priceAll + item.priceBill;
+                                bills.push(item);
+                                total = total + 1;
+                            }
                         }
-                     }
-                   }else{
-                    bills.push(item)
-                    total = total+1
-                    priceAll = priceAll + item.priceBill;
-                   }
+                    } else {
+                        bills.push(item);
+                        total = total + 1;
+                        priceAll = priceAll + item.priceBill;
+                    }
                 }
             });
-        
+
             return res.status(200).json({ allBill: bills, total: total, price: priceAll });
         } catch (error) {
             return res.status(500).json(error);
@@ -249,14 +267,33 @@ const billController = {
         }
     },
     allTotalBill: async (req, res) => {
+        const dateTemp = new Date(req.body.date);
+
         try {
             let total = 0;
             const bills = await Bill.find();
+
             bills.map((bill) => {
                 if (bill.isRejectBill == false) {
-                    total = total + bill.priceBill;
+                    if (req.body.date) {
+                        if (req.body.type === 'month') {
+                            if (
+                                dateTemp.getFullYear() === bill.createdAt.getFullYear() &&
+                                dateTemp.getMonth() === bill.createdAt.getMonth()
+                            ) {
+                                total = total + bill.priceBill;
+                            }
+                        } else if (req.body.type === 'year') {
+                            if (dateTemp.getFullYear() === bill.createdAt.getFullYear()) {
+                                total = total + bill.priceBill;
+                            }
+                        }
+                    } else {
+                        total = total + bill.priceBill;
+                    }
                 }
             });
+            console.log(total);
             return res.status(200).json(total);
         } catch (error) {
             return res.status(500).json(error);
@@ -268,33 +305,35 @@ const billController = {
     },
 
     getAllBillPage: async (req, res) => {
-
         console.log(req.body.date);
-      
-        let dateCheck = new Date(req.body.date)
-        const allBill = []
-        let total = 0
-        let price = 0
+
+        let dateCheck = new Date(req.body.date);
+        const allBill = [];
+        let total = 0;
+        let price = 0;
         const bills = await Bill.find()
             .populate('user', 'username')
             .populate('userActive', 'username')
             .populate('chefActive', 'username')
             .sort({ updatedAt: -1 });
-        
-        bills.map(item=>{
-           if(req.body.date){
-            if(dateCheck.getFullYear() === item.createdAt.getFullYear() && dateCheck.getMonth() === item.createdAt.getMonth()){
-                allBill.push(item)
-                total = total + 1
-                price = price + item.priceBill
+
+        bills.map((item) => {
+            if (req.body.date) {
+                if (
+                    dateCheck.getFullYear() === item.createdAt.getFullYear() &&
+                    dateCheck.getMonth() === item.createdAt.getMonth()
+                ) {
+                    allBill.push(item);
+                    total = total + 1;
+                    price = price + item.priceBill;
+                }
+            } else {
+                allBill.push(item);
+                total = total + 1;
+                price = price + item.priceBill;
             }
-           }else{
-            allBill.push(item)
-            total = total + 1
-            price = price + item.priceBill
-        }
-        })
-        return res.status(200).json({bills:allBill,total:total,price:price});
+        });
+        return res.status(200).json({ bills: allBill, total: total, price: price });
     },
     getAllBillWithUser: async (req, res) => {},
 };
