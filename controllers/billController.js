@@ -266,6 +266,84 @@ const billController = {
             return res.status(500).json(error);
         }
     },
+    chartBill: async (req, res) => {
+        const arr = [];
+        let dateNow = new Date();
+        if (req.body.date) {
+            dateNow = new Date(req.body.date);
+        }
+        let t1 = new Date('2022/01/02');
+        let t2 = new Date('2022/02/02');
+        let t3 = new Date('2022/03/02');
+        let t4 = new Date('2022/04/02');
+        let t5 = new Date('2022/05/02');
+        let t6 = new Date('2022/06/02');
+        let t7 = new Date('2022/07/02');
+        let t8 = new Date('2022/08/02');
+        let t9 = new Date('2022/09/02');
+        let t10 = new Date('2022/10/02');
+        let t11 = new Date('2022/11/02');
+        let t12 = new Date('2022/12/02');
+        let total1 = 0;
+        let total2 = 0;
+        let total3 = 0;
+        let total4 = 0;
+        let total5 = 0;
+        let total6 = 0;
+        let total7 = 0;
+        let total8 = 0;
+        let total9 = 0;
+        let total10 = 0;
+        let total11 = 0;
+        let total12 = 0;
+
+        const bills = await Bill.find();
+
+        bills.map((item) => {
+            if (item.isRejectBill == false) {
+                if (dateNow.getFullYear() == item.createdAt.getFullYear()) {
+                    if (t1.getMonth() === item.createdAt.getMonth()) {
+                        total1 = total1 + item.priceBill;
+                    }
+                    if (t2.getMonth() === item.createdAt.getMonth()) {
+                        total2 = total2 + item.priceBill;
+                    }
+                    if (t3.getMonth() === item.createdAt.getMonth()) {
+                        total3 = total3 + item.priceBill;
+                    }
+                    if (t4.getMonth() === item.createdAt.getMonth()) {
+                        total4 = total4 + item.priceBill;
+                    }
+                    if (t5.getMonth() === item.createdAt.getMonth()) {
+                        total5 = total5 + item.priceBill;
+                    }
+                    if (t6.getMonth() === item.createdAt.getMonth()) {
+                        total6 = total6 + item.priceBill;
+                    }
+                    if (t7.getMonth() === item.createdAt.getMonth()) {
+                        total7 = total7 + item.priceBill;
+                    }
+                    if (t8.getMonth() === item.createdAt.getMonth()) {
+                        total8 = total8 + item.priceBill;
+                    }
+                    if (t9.getMonth() === item.createdAt.getMonth()) {
+                        total9 = total9 + item.priceBill;
+                    }
+                    if (t10.getMonth() === item.createdAt.getMonth()) {
+                        total10 = total10 + item.priceBill;
+                    }
+                    if (t11.getMonth() === item.createdAt.getMonth()) {
+                        total11 = total11 + item.priceBill;
+                    }
+                    if (t12.getMonth() === item.createdAt.getMonth()) {
+                        total12 = total12 + item.priceBill;
+                    }
+                }
+            }
+        });
+        arr.push(total1, total2, total3, total4, total5, total6, total7, total8, total9, total10, total11, total12);
+        return res.status(200).json(arr);
+    },
     allTotalBill: async (req, res) => {
         const dateTemp = new Date(req.body.date);
 
