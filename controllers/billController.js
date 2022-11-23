@@ -305,7 +305,7 @@ const billController = {
     },
 
     getAllBillPage: async (req, res) => {
-        console.log(req.body.date);
+        console.log(req.body);
 
         let dateCheck = new Date(req.body.date);
         const allBill = [];
@@ -319,18 +319,38 @@ const billController = {
 
         bills.map((item) => {
             if (req.body.date) {
-                if (
-                    dateCheck.getFullYear() === item.createdAt.getFullYear() &&
-                    dateCheck.getMonth() === item.createdAt.getMonth()
-                ) {
-                    allBill.push(item);
-                    total = total + 1;
-                    price = price + item.priceBill;
+                if (req.body.type === 'month') {
+                    if (
+                        dateCheck.getFullYear() === item.createdAt.getFullYear() &&
+                        dateCheck.getMonth() === item.createdAt.getMonth()
+                    ) {
+                        allBill.push(item);
+                        total = total + 1;
+                        price = price + item.priceBill;
+                    }
+                } else if (req.body.type === 'year') {
+                    if (dateCheck.getFullYear() === item.createdAt.getFullYear()) {
+                        allBill.push(item);
+                        total = total + 1;
+                        price = price + item.priceBill;
+                    }
+                } else if (req.body.type === 'day') {
+                    if (
+                        dateCheck.getFullYear() === item.createdAt.getFullYear() &&
+                        dateCheck.getMonth() === item.createdAt.getMonth() &&
+                        dateCheck.getDate() === item.createdAt.getDate()
+                    ) {
+                        allBill.push(item);
+                        total = total + 1;
+                        price = price + item.priceBill;
+                    }
                 }
             } else {
                 allBill.push(item);
                 total = total + 1;
-                price = price + item.priceBill;
+                if (item.isRejectBill == false) {
+                    price = price + item.priceBill;
+                }
             }
         });
         return res.status(200).json({ bills: allBill, total: total, price: price });
