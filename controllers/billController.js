@@ -124,15 +124,31 @@ const billController = {
         }
     },
     getBillWithUserActive: async (req, res) => {
+        const dateTemp = new Date(req.body.date)
+        console.log(dateTemp);
         try {
             let priceAll = 0;
+            let bills = []
             const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
             let arr = allBill.length;
             allBill.map((item) => {
-                if (item.status === 'NHAN_VIEN_NHAN_MON') priceAll = priceAll + item.priceBill;
+                if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status ==='FAIL_BILL') {
+                   if(req.body.date){
+                    if(dateTemp.getFullYear() === item.createdAt.getFullYear()){
+                        if(dateTemp.getMonth() === item.createdAt.getMonth()){
+                         if(dateTemp.getDate() === item.createdAt.getDate()){
+                             priceAll = priceAll + item.priceBill;
+                             bills.push(item)
+                         }
+                        }
+                     }
+                   }else{
+                    bills.push(item)
+                   }
+                }
             });
-            console.log(priceAll);
-            return res.status(200).json({ allBill, total: arr, price: priceAll });
+        
+            return res.status(200).json({ allBill: bills, total: arr, price: priceAll });
         } catch (error) {
             return res.status(500).json(error);
         }
@@ -248,12 +264,33 @@ const billController = {
     },
 
     getAllBillPage: async (req, res) => {
+
+        console.log(req.body.date);
+      
+        let dateCheck = new Date(req.body.date)
+        const allBill = []
+        let total = 0
+        let price = 0
         const bills = await Bill.find()
             .populate('user', 'username')
             .populate('userActive', 'username')
             .populate('chefActive', 'username')
             .sort({ updatedAt: -1 });
-        return res.status(200).json(bills);
+        
+        bills.map(item=>{
+           if(req.body.date){
+            if(dateCheck.getFullYear() === item.createdAt.getFullYear() && dateCheck.getMonth() === item.createdAt.getMonth()){
+                allBill.push(item)
+                total = total + 1
+                price = price + item.priceBill
+            }
+           }else{
+            allBill.push(item)
+            total = total + 1
+            price = price + item.priceBill
+        }
+        })
+        return res.status(200).json({bills:allBill,total:total,price:price});
     },
     getAllBillWithUser: async (req, res) => {},
 };

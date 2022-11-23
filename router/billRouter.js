@@ -9,8 +9,9 @@ router.delete('/:id', middlewareController.verifyTokenAdminAndCashier, billContr
 
 //get bill with role
 router.get('/:id', middlewareController.verifyToken, billController.getAllBill);
-router.get('/', middlewareController.verifyTokenAndAdmin, billController.getAllBillPage);
-router.get('/a/:id', middlewareController.verifyToken, billController.getBillWithUserActive);
+router.post('/find', middlewareController.verifyTokenAndAdmin, billController.getAllBillPage);
+//bill user cms
+router.post('/a/:id', middlewareController.verifyToken, billController.getBillWithUserActive);
 
 //get bill successs
 router.post('/success', middlewareController.verifyToken, billController.getBillSuccess);
