@@ -129,6 +129,7 @@ const billController = {
         try {
             let priceAll = 0;
             let bills = []
+            let total = 0
             const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
             let arr = allBill.length;
             allBill.map((item) => {
@@ -139,16 +140,19 @@ const billController = {
                          if(dateTemp.getDate() === item.createdAt.getDate()){
                              priceAll = priceAll + item.priceBill;
                              bills.push(item)
+                             total  = total + 1
                          }
                         }
                      }
                    }else{
                     bills.push(item)
+                    total = total+1
+                    priceAll = priceAll + item.priceBill;
                    }
                 }
             });
         
-            return res.status(200).json({ allBill: bills, total: arr, price: priceAll });
+            return res.status(200).json({ allBill: bills, total: total, price: priceAll });
         } catch (error) {
             return res.status(500).json(error);
         }
