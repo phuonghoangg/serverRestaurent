@@ -131,42 +131,100 @@ const billController = {
     },
     getBillWithUserActive: async (req, res) => {
         const dateTemp = new Date(req.body.date);
+        const currentDay = new Date();
 
-        console.log(req.body.type);
+        let month;
+        let year;
+        if (req.body.month === 'Month') {
+            month = '02';
+        } else {
+            month = req.body.month;
+        }
+
+        if (req.body.year === 'Year') {
+            year = '2020';
+        } else {
+            year = req.body.year;
+        }
+
+        let datePickString = `${month}/13/${year}`;
+
+        const datePick = new Date(datePickString);
+
         try {
             let priceAll = 0;
             let bills = [];
             let total = 0;
             const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
-            let arr = allBill.length;
             allBill.map((item) => {
                 if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status === 'FAIL_BILL') {
-                    if (req.body.date && item.isRejectBill == false) {
-                        if (req.body.type === 'day') {
+                    if (item.isRejectBill == false) {
+                        if (req.body.month !== 'Month' && req.body.year === 'Year') {
+                            if (
+                                currentDay.getFullYear() === item.createdAt.getFullYear() &&
+                                datePick.getMonth() === item.createdAt.getMonth()
+                            ) {
+                                bills.push(item);
+                                priceAll = priceAll + item.priceBill;
+                                total = total + 1;
+                            }
+                        } else if (req.body.year !== 'Year' && req.body.month === 'Month') {
+                            if (datePick.getFullYear() === item.createdAt.getFullYear()) {
+                                bills.push(item);
+                                priceAll = priceAll + item.priceBill;
+                                total = total + 1;
+                            }
+                        } else if (req.body.year !== 'Year' && req.body.month !== 'Month') {
+                            if (
+                                datePick.getFullYear() === item.createdAt.getFullYear() &&
+                                datePick.getMonth() === item.createdAt.getMonth()
+                            ) {
+                                bills.push(item);
+                                priceAll = priceAll + item.priceBill;
+                                total = total + 1;
+                            }
+                        } else if (req.body.date && req.body.year === 'Year' && req.body.month === 'Month') {
                             if (
                                 dateTemp.getFullYear() === item.createdAt.getFullYear() &&
                                 dateTemp.getMonth() === item.createdAt.getMonth() &&
                                 dateTemp.getDate() === item.createdAt.getDate()
                             ) {
-                                priceAll = priceAll + item.priceBill;
                                 bills.push(item);
+                                priceAll = priceAll + item.priceBill;
                                 total = total + 1;
                             }
-                        } else if (req.body.type === 'month') {
-                            if (
-                                dateTemp.getFullYear() === item.createdAt.getFullYear() &&
-                                dateTemp.getMonth() === item.createdAt.getMonth()
-                            ) {
-                                priceAll = priceAll + item.priceBill;
-                                bills.push(item);
-                                total = total + 1;
-                            }
+                        } else {
+                            bills.push(item);
+                            priceAll = priceAll + item.priceBill;
+                            total = total + 1;
                         }
-                    } else {
-                        bills.push(item);
-                        total = total + 1;
-                        priceAll = priceAll + item.priceBill;
                     }
+                    // if (req.body.date && item.isRejectBill == false) {
+                    //     if (req.body.type === 'day') {
+                    //         if (
+                    //             dateTemp.getFullYear() === item.createdAt.getFullYear() &&
+                    //             dateTemp.getMonth() === item.createdAt.getMonth() &&
+                    //             dateTemp.getDate() === item.createdAt.getDate()
+                    //         ) {
+                    //             priceAll = priceAll + item.priceBill;
+                    //             bills.push(item);
+                    //             total = total + 1;
+                    //         }
+                    //     } else if (req.body.type === 'month') {
+                    //         if (
+                    //             dateTemp.getFullYear() === item.createdAt.getFullYear() &&
+                    //             dateTemp.getMonth() === item.createdAt.getMonth()
+                    //         ) {
+                    //             priceAll = priceAll + item.priceBill;
+                    //             bills.push(item);
+                    //             total = total + 1;
+                    //         }
+                    //     }
+                    // } else {
+                    //     bills.push(item);
+                    //     total = total + 1;
+                    //     priceAll = priceAll + item.priceBill;
+                    // }
                 }
             });
 
@@ -345,33 +403,80 @@ const billController = {
         return res.status(200).json(arr);
     },
     allTotalBill: async (req, res) => {
+        let currentDay = new Date();
         const dateTemp = new Date(req.body.date);
+        console.log(req.body);
 
+        let month;
+        let year;
+        if (req.body.month === 'Month') {
+            month = '02';
+        } else {
+            month = req.body.month;
+        }
+
+        if (req.body.year === 'Year') {
+            year = '2020';
+        } else {
+            year = req.body.year;
+        }
+
+        let datePickString = `${month}/13/${year}`;
+
+        const datePick = new Date(datePickString);
+        // console.log(datePick.getMonth());
         try {
             let total = 0;
             const bills = await Bill.find();
-
             bills.map((bill) => {
                 if (bill.isRejectBill == false) {
-                    if (req.body.date) {
-                        if (req.body.type === 'month') {
-                            if (
-                                dateTemp.getFullYear() === bill.createdAt.getFullYear() &&
-                                dateTemp.getMonth() === bill.createdAt.getMonth()
-                            ) {
-                                total = total + bill.priceBill;
-                            }
-                        } else if (req.body.type === 'year') {
-                            if (dateTemp.getFullYear() === bill.createdAt.getFullYear()) {
-                                total = total + bill.priceBill;
-                            }
+                    if (req.body.month !== 'Month' && req.body.year !== 'Year') {
+                        if (
+                            datePick.getFullYear() === bill.createdAt.getFullYear() &&
+                            datePick.getMonth() === bill.createdAt.getMonth()
+                        ) {
+                            total = total + bill.priceBill;
                         }
-                    } else {
+                    } else if (req.body.month != 'Month' && req.body.year === 'Year') {
+                        if (
+                            currentDay.getFullYear() === bill.createdAt.getFullYear() &&
+                            datePick.getMonth() == bill.createdAt.getMonth()
+                        ) {
+                            total = total + bill.priceBill;
+                        }
+                    } else if (req.body.year !== 'Year') {
+                        if (datePick.getFullYear() === bill.createdAt.getFullYear()) {
+                            total = total + bill.priceBill;
+                        }
+                    } else if (req.body.date) {
+                        if (
+                            dateTemp.getFullYear() === bill.createdAt.getFullYear() &&
+                            dateTemp.getMonth() === bill.createdAt.getMonth() &&
+                            dateTemp.getDate() === bill.createdAt.getDate()
+                        ) {
+                            total = total + bill.priceBill;
+                        }
+                    } else if (req.body.month === 'Month' && req.body.year === 'Year') {
                         total = total + bill.priceBill;
                     }
+                    // if (req.body.date) {
+                    //     if (req.body.type === 'month') {
+                    //         if (
+                    //             dateTemp.getFullYear() === bill.createdAt.getFullYear() &&
+                    //             dateTemp.getMonth() === bill.createdAt.getMonth()
+                    //         ) {
+                    //             total = total + bill.priceBill;
+                    //         }
+                    //     } else if (req.body.type === 'year') {
+                    //         if (dateTemp.getFullYear() === bill.createdAt.getFullYear()) {
+                    //             total = total + bill.priceBill;
+                    //         }
+                    //     }
+                    // } else {
+                    //     total = total + bill.priceBill;
+                    // }
                 }
             });
-            console.log(total);
             return res.status(200).json(total);
         } catch (error) {
             return res.status(500).json(error);
@@ -383,9 +488,29 @@ const billController = {
     },
 
     getAllBillPage: async (req, res) => {
+        let currentDay = new Date();
+        const dateTemp = new Date(req.body.date);
+
         console.log(req.body);
 
-        let dateCheck = new Date(req.body.date);
+        let month;
+        let year;
+        if (req.body.month === 'Month') {
+            month = '02';
+        } else {
+            month = req.body.month;
+        }
+
+        if (req.body.year === 'Year') {
+            year = '2020';
+        } else {
+            year = req.body.year;
+        }
+
+        let datePickString = `${month}/13/${year}`;
+
+        const datePick = new Date(datePickString);
+
         const allBill = [];
         let total = 0;
         let price = 0;
@@ -396,40 +521,79 @@ const billController = {
             .sort({ updatedAt: -1 });
 
         bills.map((item) => {
-            if (req.body.date) {
-                if (req.body.type === 'month') {
-                    if (
-                        dateCheck.getFullYear() === item.createdAt.getFullYear() &&
-                        dateCheck.getMonth() === item.createdAt.getMonth()
-                    ) {
-                        allBill.push(item);
-                        total = total + 1;
-                        price = price + item.priceBill;
-                    }
-                } else if (req.body.type === 'year') {
-                    if (dateCheck.getFullYear() === item.createdAt.getFullYear()) {
-                        allBill.push(item);
-                        total = total + 1;
-                        price = price + item.priceBill;
-                    }
-                } else if (req.body.type === 'day') {
-                    if (
-                        dateCheck.getFullYear() === item.createdAt.getFullYear() &&
-                        dateCheck.getMonth() === item.createdAt.getMonth() &&
-                        dateCheck.getDate() === item.createdAt.getDate()
-                    ) {
-                        allBill.push(item);
-                        total = total + 1;
-                        price = price + item.priceBill;
-                    }
+            if (req.body.month !== 'Month' && req.body.year === 'Year') {
+                if (
+                    currentDay.getFullYear() === item.createdAt.getFullYear() &&
+                    datePick.getMonth() === item.createdAt.getMonth()
+                ) {
+                    allBill.push(item);
+                    price = price + item.priceBill;
+                    total = total + 1;
+                }
+            } else if (req.body.year !== 'Year' && req.body.month === 'Month') {
+                if (datePick.getFullYear() === item.createdAt.getFullYear()) {
+                    allBill.push(item);
+                    price = price + item.priceBill;
+                    total = total + 1;
+                }
+            } else if (req.body.year !== 'Year' && req.body.month !== 'Month') {
+                if (
+                    datePick.getFullYear() === item.createdAt.getFullYear() &&
+                    datePick.getMonth() === item.createdAt.getMonth()
+                ) {
+                    allBill.push(item);
+                    price = price + item.priceBill;
+                    total = total + 1;
+                }
+            } else if (req.body.date && req.body.year === 'Year' && req.body.month === 'Month') {
+                if (
+                    dateTemp.getFullYear() === item.createdAt.getFullYear() &&
+                    dateTemp.getMonth() === item.createdAt.getMonth() &&
+                    dateTemp.getDate() === item.createdAt.getDate()
+                ) {
+                    allBill.push(item);
+                    price = price + item.priceBill;
+                    total = total + 1;
                 }
             } else {
                 allBill.push(item);
+                price = price + item.priceBill;
                 total = total + 1;
-                if (item.isRejectBill == false) {
-                    price = price + item.priceBill;
-                }
             }
+            // if (req.body.date) {
+            //     if (req.body.type === 'month') {
+            //         if (
+            //             dateCheck.getFullYear() === item.createdAt.getFullYear() &&
+            //             dateCheck.getMonth() === item.createdAt.getMonth()
+            //         ) {
+            //             allBill.push(item);
+            //             total = total + 1;
+            //             price = price + item.priceBill;
+            //         }
+            //     } else if (req.body.type === 'year') {
+            //         if (dateCheck.getFullYear() === item.createdAt.getFullYear()) {
+            //             allBill.push(item);
+            //             total = total + 1;
+            //             price = price + item.priceBill;
+            //         }
+            //     } else if (req.body.type === 'day') {
+            //         if (
+            //             dateCheck.getFullYear() === item.createdAt.getFullYear() &&
+            //             dateCheck.getMonth() === item.createdAt.getMonth() &&
+            //             dateCheck.getDate() === item.createdAt.getDate()
+            //         ) {
+            //             allBill.push(item);
+            //             total = total + 1;
+            //             price = price + item.priceBill;
+            //         }
+            //     }
+            // } else {
+            //     allBill.push(item);
+            //     total = total + 1;
+            //     if (item.isRejectBill == false) {
+            //         price = price + item.priceBill;
+            //     }
+            // }
         });
         return res.status(200).json({ bills: allBill, total: total, price: price });
     },
