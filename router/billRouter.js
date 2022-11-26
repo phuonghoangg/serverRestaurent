@@ -27,6 +27,8 @@ router.post('/accept-chef', middlewareController.verifyTokenAndChef, billControl
 router.post('/accept-dishout', middlewareController.verifyTokenAdminAndCashier, billController.accecptDishOut);
 router.post('/fail-bill', middlewareController.verifyTokenAndCashier, billController.failBill);
 router.post('/reject-bill', middlewareController.verifyTokenAdminAndCashier, billController.rejectBill);
+router.post('/take-money', middlewareController.verifyTokenAdminAndCashier, billController.takeMoney);
+
 
 router.get('/get-all-billaccept', billController.getAllBillAccept);
 module.exports = router;

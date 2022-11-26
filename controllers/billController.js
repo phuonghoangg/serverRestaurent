@@ -56,6 +56,7 @@ const billController = {
                     if (
                         item.status !== 'NHAN_VIEN_NHAN_MON' &&
                         item.status !== 'HUY_DON' &&
+                        item.status !== 'DA_THANH_TOAN' &&
                         item.status !== 'FAIL_BILL'
                     ) {
                         billWait.push(item);
@@ -79,7 +80,7 @@ const billController = {
                 .sort({ createdAt: -1 });
 
             allBill.map((item) => {
-                if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status === 'FAIL_BILL') {
+                if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status === 'FAIL_BILL' || item.status === 'DA_THANH_TOAN') {
                     if (req.body.type === 'day') {
                         if (time.getFullYear() === item.createdAt.getFullYear()) {
                             if (time.getMonth() === item.createdAt.getMonth()) {
@@ -157,7 +158,7 @@ const billController = {
             let total = 0;
             const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
             allBill.map((item) => {
-                if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status === 'FAIL_BILL') {
+                if (item.status === 'NHAN_VIEN_NHAN_MON' || item.status === 'FAIL_BILL' || item.status === 'DA_THANH_TOAN') {
                     if (item.isRejectBill == false) {
                         if (req.body.month !== 'Month' && req.body.year === 'Year') {
                             if (
@@ -264,32 +265,59 @@ const billController = {
             return res.status(500).json(error);
         }
     },
+    // fix chef select cashier
     acceptBillChef: async (req, res) => {
         try {
             const billData = await Bill.findById(req.body.id);
-            if (!billData.chefActive) {
-                await billData.updateOne({ $set: { chefActive: req.body.user, status: 'BEP_XAC_NHAN' } });
+            if (!billData.chefActive && req.body.userPlaced) {
+                await billData.updateOne({ $set: { chefActive: req.body.user, status: 'BEP_XAC_NHAN',userPlaced:req.body.userPlaced } });
                 return res.status(200).json('bep da xac nhan don hang');
             } else {
+                console.log("khong co user nao nhan mon");
                 return res.status(400).json('don hang da duoc bep xac nhan');
             }
         } catch (error) {
             return res.status(500).json(error);
         }
     },
+    // true cashier accept next step bill
     accecptDishOut: async (req, res) => {
+       
         try {
             const billData = await Bill.findById(req.body.id);
-            if (billData.chefActive && billData.isDishOut == false) {
+            // console.log("client: ",req.body.user);
+            // console.log("client: ",billData.userPlaced.toString());
+            if (billData.chefActive && billData.isDishOut == false && billData.userPlaced.toString() === req.body.user) {
                 await billData.updateOne({ $set: { isDishOut: true, status: 'NHAN_VIEN_NHAN_MON' } });
                 return res.status(200).json('da nhan mon tu bep');
             } else {
+                console.log("khong dung nguoi nhan mon");
                 return res.status(400).json('bep chua ra mon');
             }
         } catch (error) {
             return res.status(500).json(error);
         }
     },
+    // take money bill 
+    takeMoney: async (req,res)=>{
+        try {
+            const billData = await Bill.findById(req.body.id);
+            if(billData.status === 'DA_THANH_TOAN'){
+              console.log("ádasdas");
+
+                await billData.updateOne({$set: {userTakeMoney:null,status:'NHAN_VIEN_NHAN_MON'}})
+               return res.status(200).json('chua thanh toan')
+           }else{
+
+            await billData.updateOne({$set: {status:'DA_THANH_TOAN', userTakeMoney:req.body.user}})
+            return res.status(200).json('da thanh toan')
+         
+           }
+        } catch (error) {
+            return res.status(500).json(error)
+        }
+    },
+
     failBill: async (req, res) => {
         try {
             let newPrice;
@@ -518,6 +546,8 @@ const billController = {
             .populate('user', 'username')
             .populate('userActive', 'username')
             .populate('chefActive', 'username')
+            .populate('userTakeMoney','username')
+            .populate('userPlaced','username')
             .sort({ updatedAt: -1 });
 
         bills.map((item) => {
