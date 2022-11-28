@@ -335,9 +335,12 @@ const billController = {
         try {
             const billData = await Bill.findById(req.body.id);
             if (billData.status === 'DA_THANH_TOAN') {
-                console.log('ádasdas');
 
-                await billData.updateOne({ $set: { userTakeMoney: null, status: 'NHAN_VIEN_NHAN_MON' } });
+                if(billData.isFailBill == true) {
+                    await billData.updateOne({ $set: { userTakeMoney: null, status: 'FAIL_BILL' } });
+                }else{
+                    await billData.updateOne({ $set: { userTakeMoney: null, status: 'NHAN_VIEN_NHAN_MON' } });
+                }
                 return res.status(200).json('chua thanh toan');
             } else {
                 await billData.updateOne({ $set: { status: 'DA_THANH_TOAN', userTakeMoney: req.body.user } });
