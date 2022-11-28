@@ -114,7 +114,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
-
+    stage: {
+        type: String,
+        default: '', //STAGE_1 tu ban 1->6
+    },
     products: [
         {
             type: mongoose.Schema.Types.ObjectId,

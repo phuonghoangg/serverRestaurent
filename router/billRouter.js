@@ -10,7 +10,7 @@ router.post('/', billController.addBill);
 router.delete('/:id', middlewareController.verifyTokenAdminAndCashier, billController.deleteBill);
 
 //get bill with role
-router.get('/:id', middlewareController.verifyToken, billController.getAllBill);
+router.post('/g/:id', middlewareController.verifyToken, billController.getAllBill);
 router.post('/find', middlewareController.verifyTokenAndAdmin, billController.getAllBillPage);
 //bill user cms
 router.post('/a/:id', middlewareController.verifyToken, billController.getBillWithUserActive);
@@ -28,7 +28,6 @@ router.post('/accept-dishout', middlewareController.verifyTokenAdminAndCashier, 
 router.post('/fail-bill', middlewareController.verifyTokenAndCashier, billController.failBill);
 router.post('/reject-bill', middlewareController.verifyTokenAdminAndCashier, billController.rejectBill);
 router.post('/take-money', middlewareController.verifyTokenAdminAndCashier, billController.takeMoney);
-
 
 router.get('/get-all-billaccept', billController.getAllBillAccept);
 module.exports = router;
