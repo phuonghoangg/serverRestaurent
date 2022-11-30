@@ -51,7 +51,7 @@ const billController = {
         }
         try {
             if (role === 'chef') {
-                allBill = await Bill.find({ status: 'DON_DA_XAC_NHAN' })
+                allBill = await Bill.find({ status: 'DON_DA_XAC_NHAN' || 'BEP_XAC_NHAN' || 'NHAN_VIEN_NHAN_MON' }) //Check lai cho nay
                     .populate('products', 'name')
                     .populate('user', ['username', 'role'])
                     .sort({ createdAt: 1 });
@@ -175,71 +175,70 @@ const billController = {
         let datePickString = `${month}/13/${year}`;
 
         const datePick = new Date(datePickString);
+        let priceAll = 0;
+        let bills = [];
+        let total = 0;
+        let bonous = false;
 
-        let bo
-        try {
-            let priceAll = 0;
-            let bills = [];
-            let total = 0;
-           
-            const bonous = 0
-            const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
-            allBill.map((item) => {
-                if (
-                    item.status === 'NHAN_VIEN_NHAN_MON' ||
-                    item.status === 'FAIL_BILL' ||
-                    item.status === 'DA_THANH_TOAN'
-                ) {
-                    if (item.isRejectBill == false) {
-                        if (req.body.month !== 'Month' && req.body.year === 'Year') {
-                            if (
-                                currentDay.getFullYear() === item.createdAt.getFullYear() &&
-                                datePick.getMonth() === item.createdAt.getMonth()
-                            ) {
-                                console.log("ádasd");
-                                bills.push(item);
-                                priceAll = priceAll + item.priceBill;
-                                total = total + 1;
-                                bonous = bonous + 1;
-                            }
-                        } else if (req.body.year !== 'Year' && req.body.month === 'Month') {
-                            if (datePick.getFullYear() === item.createdAt.getFullYear()) {
-                                bills.push(item);
-                                priceAll = priceAll + item.priceBill;
-                                total = total + 1;
-                            }
-                        } else if (req.body.year !== 'Year' && req.body.month !== 'Month') {
-                            if (
-                                datePick.getFullYear() === item.createdAt.getFullYear() &&
-                                datePick.getMonth() === item.createdAt.getMonth()
-                            ) {
-                                bills.push(item);
-                                priceAll = priceAll + item.priceBill;
-                                total = total + 1;
-                            }
-                        } else if (req.body.date && req.body.year === 'Year' && req.body.month === 'Month') {
-                            if (
-                                dateTemp.getFullYear() === item.createdAt.getFullYear() &&
-                                dateTemp.getMonth() === item.createdAt.getMonth() &&
-                                dateTemp.getDate() === item.createdAt.getDate()
-                            ) {
-                                bills.push(item);
-                                priceAll = priceAll + item.priceBill;
-                                total = total + 1;
-                            }
-                        } else {
+        let bonousCheck = 0;
+        const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
+        allBill.map((item) => {
+            if (
+                item.status === 'NHAN_VIEN_NHAN_MON' ||
+                item.status === 'FAIL_BILL' ||
+                item.status === 'DA_THANH_TOAN'
+            ) {
+                if (item.isRejectBill == false) {
+                    if (req.body.month !== 'Month' && req.body.year === 'Year') {
+                        if (
+                            currentDay.getFullYear() === item.createdAt.getFullYear() &&
+                            datePick.getMonth() === item.createdAt.getMonth()
+                        ) {
                             bills.push(item);
-                            priceAll = priceAll + item.priceBill;
                             total = total + 1;
+                            priceAll = priceAll + item.priceBill;
+                            bonousCheck = bonousCheck + 1;
                         }
+                    } else if (req.body.month === 'Month' && req.body.year !== 'Year') {
+                        if (datePick.getFullYear() === item.createdAt.getFullYear()) {
+                            bills.push(item);
+                            total = total + 1;
+                            priceAll = priceAll + item.priceBill;
+                            // bonousCheck = bonousCheck + 1;
+                        }
+                    } else if (req.body.month !== 'Month' && req.body.year !== 'Year') {
+                        if (
+                            datePick.getFullYear() === item.createdAt.getFullYear() &&
+                            datePick.getMonth() === item.createdAt.getMonth()
+                        ) {
+                            bills.push(item);
+                            total = total + 1;
+                            priceAll = priceAll + item.priceBill;
+                            bonousCheck = bonousCheck + 1;
+                        }
+                    } else if (req.body.date) {
+                        if (
+                            dateTemp.getFullYear() === item.createdAt.getFullYear() &&
+                            dateTemp.getMonth() === item.createdAt.getMonth() &&
+                            dateTemp.getDate() === item.createdAt.getDate()
+                        ) {
+                            bills.push(item);
+                            total = total + 1;
+                            priceAll = priceAll + item.priceBill;
+                            // bonousCheck = bonousCheck + 1;
+                        }
+                    } else {
+                        bills.push(item);
+                        total = total + 1;
+                        priceAll = priceAll + item.priceBill;
                     }
                 }
-            });
-           
-            return res.status(200).json({ allBill: bills, total: total, price: priceAll });
-        } catch (error) {
-            return res.status(500).json(error);
+            }
+        });
+        if (bonousCheck > 15) {
+            bonous = true;
         }
+        return res.status(200).json({ allBill: bills, total: total, price: priceAll, isBonous: bonous });
     },
 
     deleteBill: async (req, res) => {
@@ -315,10 +314,9 @@ const billController = {
         try {
             const billData = await Bill.findById(req.body.id);
             if (billData.status === 'DA_THANH_TOAN') {
-
-                if(billData.isFailBill == true) {
+                if (billData.isFailBill == true) {
                     await billData.updateOne({ $set: { userTakeMoney: null, status: 'FAIL_BILL' } });
-                }else{
+                } else {
                     await billData.updateOne({ $set: { userTakeMoney: null, status: 'NHAN_VIEN_NHAN_MON' } });
                 }
                 return res.status(200).json('chua thanh toan');
@@ -500,10 +498,9 @@ const billController = {
                         }
                     } else if (req.body.month === 'Month' && req.body.year === 'Year') {
                         total = total + bill.priceBill;
-                    }else{
-                        total = total + bill.priceBill
+                    } else {
+                        total = total + bill.priceBill;
                     }
-                   
                 }
             });
             return res.status(200).json(total);

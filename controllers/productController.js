@@ -75,6 +75,29 @@ const productController = {
             return res.status(500).json(error);
         }
     },
+    totalSellProduct: async (req, res) => {
+        const productNameSell = [];
+        const productTotalSell = [];
+        try {
+            const product = await Product.find().select(['name', 'bills']);
+            product.map((item) => {
+                productNameSell.push(item.name);
+                productTotalSell.push(item.bills.length);
+            });
+            return res.status(200).json({ name: productNameSell, total: productTotalSell });
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
+    monthSellProduct: async (req, res) => {
+        try {
+            const product = await Product.find().select(['name', 'bills']).populate('bills', ['createdAt']);
+
+            return res.status(200).json(product);
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    },
 };
 
 module.exports = productController;
