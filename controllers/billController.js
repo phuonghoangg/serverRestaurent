@@ -154,6 +154,7 @@ const billController = {
         }
     },
     getBillWithUserActive: async (req, res) => {
+        console.log(req.body);
         const dateTemp = new Date(req.body.date);
         const currentDay = new Date();
 
@@ -175,10 +176,13 @@ const billController = {
 
         const datePick = new Date(datePickString);
 
+        let bo
         try {
             let priceAll = 0;
             let bills = [];
             let total = 0;
+           
+            const bonous = 0
             const allBill = await Bill.find({ userActive: req.params.id }).populate('products');
             allBill.map((item) => {
                 if (
@@ -192,9 +196,11 @@ const billController = {
                                 currentDay.getFullYear() === item.createdAt.getFullYear() &&
                                 datePick.getMonth() === item.createdAt.getMonth()
                             ) {
+                                console.log("ádasd");
                                 bills.push(item);
                                 priceAll = priceAll + item.priceBill;
                                 total = total + 1;
+                                bonous = bonous + 1;
                             }
                         } else if (req.body.year !== 'Year' && req.body.month === 'Month') {
                             if (datePick.getFullYear() === item.createdAt.getFullYear()) {
@@ -227,35 +233,9 @@ const billController = {
                             total = total + 1;
                         }
                     }
-                    // if (req.body.date && item.isRejectBill == false) {
-                    //     if (req.body.type === 'day') {
-                    //         if (
-                    //             dateTemp.getFullYear() === item.createdAt.getFullYear() &&
-                    //             dateTemp.getMonth() === item.createdAt.getMonth() &&
-                    //             dateTemp.getDate() === item.createdAt.getDate()
-                    //         ) {
-                    //             priceAll = priceAll + item.priceBill;
-                    //             bills.push(item);
-                    //             total = total + 1;
-                    //         }
-                    //     } else if (req.body.type === 'month') {
-                    //         if (
-                    //             dateTemp.getFullYear() === item.createdAt.getFullYear() &&
-                    //             dateTemp.getMonth() === item.createdAt.getMonth()
-                    //         ) {
-                    //             priceAll = priceAll + item.priceBill;
-                    //             bills.push(item);
-                    //             total = total + 1;
-                    //         }
-                    //     }
-                    // } else {
-                    //     bills.push(item);
-                    //     total = total + 1;
-                    //     priceAll = priceAll + item.priceBill;
-                    // }
                 }
             });
-
+           
             return res.status(200).json({ allBill: bills, total: total, price: priceAll });
         } catch (error) {
             return res.status(500).json(error);
@@ -388,8 +368,8 @@ const billController = {
     chartBill: async (req, res) => {
         const arr = [];
         let dateNow = new Date();
-        if (req.body.date) {
-            dateNow = new Date(req.body.date);
+        if (req.body.year !== 'Year') {
+            dateNow = new Date(`${req.body.year}/02/02`);
         }
         let t1 = new Date('2022/01/02');
         let t2 = new Date('2022/02/02');
@@ -461,6 +441,7 @@ const billController = {
             }
         });
         arr.push(total1, total2, total3, total4, total5, total6, total7, total8, total9, total10, total11, total12);
+        console.log(arr);
         return res.status(200).json(arr);
     },
     allTotalBill: async (req, res) => {
@@ -519,23 +500,10 @@ const billController = {
                         }
                     } else if (req.body.month === 'Month' && req.body.year === 'Year') {
                         total = total + bill.priceBill;
+                    }else{
+                        total = total + bill.priceBill
                     }
-                    // if (req.body.date) {
-                    //     if (req.body.type === 'month') {
-                    //         if (
-                    //             dateTemp.getFullYear() === bill.createdAt.getFullYear() &&
-                    //             dateTemp.getMonth() === bill.createdAt.getMonth()
-                    //         ) {
-                    //             total = total + bill.priceBill;
-                    //         }
-                    //     } else if (req.body.type === 'year') {
-                    //         if (dateTemp.getFullYear() === bill.createdAt.getFullYear()) {
-                    //             total = total + bill.priceBill;
-                    //         }
-                    //     }
-                    // } else {
-                    //     total = total + bill.priceBill;
-                    // }
+                   
                 }
             });
             return res.status(200).json(total);
