@@ -51,10 +51,16 @@ const billController = {
         }
         try {
             if (role === 'chef') {
-                allBill = await Bill.find({ status: 'DON_DA_XAC_NHAN' || 'BEP_XAC_NHAN' || 'NHAN_VIEN_NHAN_MON' }) //Check lai cho nay
+                const allBill =[]
+                bills = await Bill.find() //Check lai cho nay
                     .populate('products', 'name')
                     .populate('user', ['username', 'role'])
                     .sort({ createdAt: 1 });
+                    bills.map(item=>{
+                        if( item.status === 'DON_DA_XAC_NHAN' ||item.status ===  'BEP_XAC_NHAN' || item.status === 'NHAN_VIEN_NHAN_MON' ){
+                            allBill.push(item)
+                        }
+                    })
                 return res.status(200).json(allBill);
             } else {
                 allBill = await Bill.find()
